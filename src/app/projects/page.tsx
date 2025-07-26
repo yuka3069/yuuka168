@@ -22,7 +22,7 @@ export default function Projects() {
               <Card
                 key={d.title}
                 title={d.title}
-                description={d.abstract}
+                abstract={d.abstract}
                 imgSrc={d.imgSrc}
                 href={d.href}
               />
