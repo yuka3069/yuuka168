@@ -1,8 +1,17 @@
-## This is a [Next.js](https://nextjs.org) blog project inspired a lot from [Next.js](https://github.com/timlrx/tailwind-nextjs-starter-blog)
+## Overview
 
-I removed lots of commponents that is not fitable in next15, mainly analyze components.And I removed the comment part.I'm planning to build it on my own.
+This repository is a pared‑down [Next.js](https://nextjs.org) blog starter, heavily inspired by the excellent [tailwind‑nextjs‑starter‑blog](https://github.com/timlrx/tailwind-nextjs-starter-blog). It has been cleaned up and updated for **Next.js 15** compatibility.
 
-Besides, it's still under development, and I think this version is a good start for those who wants to build a fullstack blog from a beginner.
+- **Analytics components removed** – they aren’t yet compatible with Next 15.
+- **Comment system removed** – I plan to build a custom solution later.
 
-This project uses [lxgw-wenkai](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) font.
-You can use cdn [here]("https://cdnjs.cloudflare.com/ajax/libs/lxgw-wenkai-web/1.520.0/style.css")
+Although still under active development, this version offers a clear, beginner‑friendly foundation for anyone who wants to create a full‑stack blog.
+
+The project comes pre‑configured with the elegant **LXGW WenKai** font.
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/lxgw-wenkai-web/1.520.0/style.css"
+/>
+```
