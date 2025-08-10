@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+
+  outputFileTracingIncludes: {
+    "/*": ["./content/**/*"],
+  },
 };
 
 export default nextConfig;

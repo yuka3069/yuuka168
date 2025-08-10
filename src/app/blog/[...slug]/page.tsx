@@ -14,7 +14,6 @@ import defaultAuthor from "@/constants/author";
 
 import { MDXRemote } from "next-mdx-remote/rsc";
 
-
 const allBlogs = await getBlogPostList();
 
 export async function generateMetadata(props: {
@@ -83,9 +82,9 @@ export default async function Page(props: {
 }) {
   const params = await props.params;
   const slug = decodeURI(params.slug.join("/"));
-  console.log("slug:", slug);
   // Filter out drafts in production
   const sortedCoreContents = await getBlogPostList();
+
   const postIndex = sortedCoreContents.findIndex((p) => p.slug === slug);
   if (postIndex === -1) {
     return notFound();
