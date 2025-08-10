@@ -14,11 +14,10 @@ import defaultAuthor from "@/constants/author";
 
 import { MDXRemote } from "next-mdx-remote/rsc";
 
-const allBlogs = await getBlogPostList();
-
 export async function generateMetadata(props: {
   params: Promise<{ slug: string[] }>;
 }): Promise<Metadata | undefined> {
+  const allBlogs = await getBlogPostList();
   const params = await props.params;
   const slug = decodeURI(params.slug.join("/"));
 
@@ -72,6 +71,7 @@ export async function generateMetadata(props: {
 }
 
 export const generateStaticParams = async () => {
+  const allBlogs = await getBlogPostList();
   return allBlogs.map((p) => ({
     slug: p.slug.split("/").map((name) => decodeURI(name)),
   }));
@@ -80,6 +80,7 @@ export const generateStaticParams = async () => {
 export default async function Page(props: {
   params: Promise<{ slug: string[] }>;
 }) {
+  const allBlogs = await getBlogPostList();
   const params = await props.params;
   const slug = decodeURI(params.slug.join("/"));
   // Filter out drafts in production

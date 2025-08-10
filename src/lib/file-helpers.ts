@@ -6,13 +6,13 @@ import { NOT_FOUND_FRONTMATTER } from "@/constants/notFoundDescription";
 import { TDateISO } from "./types";
 
 export async function getBlogPostList() {
-  const fileNames = await readDirectory("/contents");
+  const fileNames = await readDirectory("contents");
 
   const blogPosts = [];
 
   for (const fileName of fileNames) {
     try {
-      const rawContent = await readFile(`/contents/${fileName}`);
+      const rawContent = await readFile(`contents/${fileName}`);
 
       const { data: frontmatter } = matter(rawContent);
 
@@ -43,7 +43,7 @@ export const loadBlogPost = React.cache(async function loadBlogPost(
   slug: string
 ) {
   try {
-    const rawContent = await readFile(`/contents/${slug}.mdx`);
+    const rawContent = await readFile(`contents/${slug}.mdx`);
 
     const { data: frontmatter, content } = matter(rawContent);
 
@@ -65,13 +65,13 @@ function readDirectory(localPath: string) {
 }
 
 export async function getAllCategoriesWithCount() {
-  const fileNames = await readDirectory("/contents");
+  const fileNames = await readDirectory("contents");
 
   const categoryCountMap: Record<string, number> = {};
 
   for (const fileName of fileNames) {
     try {
-      const rawContent = await readFile(`/contents/${fileName}`);
+      const rawContent = await readFile(`contents/${fileName}`);
       const { data: frontmatter } = matter(rawContent);
 
       const categories = (frontmatter.category as string)
