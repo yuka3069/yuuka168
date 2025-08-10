@@ -1,13 +1,13 @@
 const author = {
   //TODO: fix the url
   name: "Yunyu",
-  avatar: "/image/testImage.jpg",
+  avatar: "/images/ocean.jpeg",
   occupation: "Frontend Developer",
   company: "Independent",
-  email: "me@example.com",
-  twitter: "yunyu_dev",
-  linkedin: "yunyu",
-  github: "yunyu168",
+  email: "chengmy3@qq.com",
+  twitter: "https://x.com/realYuka3069",
+  linkedin: "https://github.com/yvan3069",
+  github: "https://github.com/yuka3069",
 };
 
 export default author;

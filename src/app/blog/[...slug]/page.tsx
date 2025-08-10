@@ -13,7 +13,7 @@ import { getBlogPostList, loadBlogPost } from "@/lib/file-helpers";
 import defaultAuthor from "@/constants/author";
 
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { title } from "process";
+
 
 const allBlogs = await getBlogPostList();
 

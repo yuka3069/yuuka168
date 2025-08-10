@@ -8,7 +8,9 @@ function Comment() {
           <p className="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold">
             <Image
               className="mr-2 w-6 h-6 rounded-full"
-              src="https://flowbite.com/docs/images/people/profile-picture-2.jpg"
+              width={24}
+              height={24}
+              src="/images/canada/lake.jpg"
               alt="Michael Gough"
             />
             Michael Gough

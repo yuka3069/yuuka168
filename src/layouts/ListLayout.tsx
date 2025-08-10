@@ -2,21 +2,21 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { formatDate } from "pliny/utils/formatDate";
-import { CoreContent } from "pliny/utils/contentlayer";
-import type { Blog } from "contentlayer/generated";
+
 import Link from "@/components/Link";
 import Tag from "@/components/Tag";
-import siteMetadata from "@/data/siteMetadata";
+
+import formatDate from "@/lib/format-date";
+import { Posts } from "@/lib/types";
 
 interface PaginationProps {
   totalPages: number;
   currentPage: number;
 }
 interface ListLayoutProps {
-  posts: CoreContent<Blog>[];
+  posts: Posts;
   title: string;
-  initialDisplayPosts?: CoreContent<Blog>[];
+  initialDisplayPosts?: Posts;
   pagination?: PaginationProps;
 }
 
@@ -83,7 +83,8 @@ export default function ListLayout({
 }: ListLayoutProps) {
   const [searchValue, setSearchValue] = useState("");
   const filteredBlogPosts = posts.filter((post) => {
-    const searchContent = post.title + post.summary + post.tags?.join(" ");
+    const searchContent =
+      post.title + post.abstract + post.categories?.join(" ");
     return searchContent.toLowerCase().includes(searchValue.toLowerCase());
   });
 
@@ -130,36 +131,34 @@ export default function ListLayout({
         <ul>
           {!filteredBlogPosts.length && "No posts found."}
           {displayPosts.map((post) => {
-            const { path, date, title, summary, tags } = post;
+            const { date, title, abstract, categories } = post;
             return (
-              <li key={path} className="py-4">
+              <li key={title} className="py-4">
                 <article className="space-y-2 xl:grid xl:grid-cols-4 xl:items-baseline xl:space-y-0">
                   <dl>
                     <dt className="sr-only">Published on</dt>
                     <dd className="text-base leading-6 font-medium text-gray-500 dark:text-gray-400">
-                      <time dateTime={date}>
-                        {formatDate(date, siteMetadata.locale)}
-                      </time>
+                      <time dateTime={date}>{formatDate(date)}</time>
                     </dd>
                   </dl>
                   <div className="space-y-3 xl:col-span-3">
                     <div>
                       <h3 className="text-2xl leading-8 font-bold tracking-tight">
                         <Link
-                          href={`/${path}`}
+                          href={`/${title}`}
                           className="text-gray-900 dark:text-gray-100"
                         >
                           {title}
                         </Link>
                       </h3>
                       <div className="flex flex-wrap">
-                        {tags?.map((tag) => (
-                          <Tag key={tag} text={tag} />
+                        {categories?.map((category: string) => (
+                          <Tag key={category} text={category} />
                         ))}
                       </div>
                     </div>
                     <div className="prose max-w-none text-gray-500 dark:text-gray-400">
-                      {summary}
+                      {abstract}
                     </div>
                   </div>
                 </article>
