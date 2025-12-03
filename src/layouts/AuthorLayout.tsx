@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 
 import SocialIcon from "@/components/social-icons";
 import Image from "@/components/Image";
+import AvatarSkeleton from "@/components/skeleton/AvatarSkeleton";
 
 interface Props {
   children: ReactNode;
@@ -30,6 +31,8 @@ export default function AuthorLayout({ children, content }: Props) {
     linkedin,
     github,
   } = content;
+
+  if (!content) return <AvatarSkeleton />;
 
   return (
     <>

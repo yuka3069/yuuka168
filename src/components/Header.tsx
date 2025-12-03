@@ -2,6 +2,7 @@ import siteMetadata from "@/constants/siteMetadata";
 import headerNavLinks from "@/constants/headerNavLinks";
 import Logo from "@/logo/ff14.svg";
 import Link from "./Link";
+import NavigationLink from "./NavigationLink";
 import MobileNav from "./MobileNav";
 import ThemeSwitch from "./ThemeSwitch";
 import SearchButton from "./SearchButton";
@@ -34,13 +35,13 @@ const Header = () => {
           {headerNavLinks
             .filter((link) => link.href !== "/")
             .map((link) => (
-              <Link
+              <NavigationLink
                 key={link.title}
                 href={link.href}
                 className="hover:text-primary-500 dark:hover:text-primary-400 m-1 font-medium text-gray-900 dark:text-gray-100"
               >
                 {link.title}
-              </Link>
+              </NavigationLink>
             ))}
         </div>
         <SearchButton />

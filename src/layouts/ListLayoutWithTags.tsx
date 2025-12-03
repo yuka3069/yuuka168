@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 import Link from "@/components/Link";
 import Tag from "@/components/Tag";
+import PaginationLink from "@/components/PaginationLink";
 
 import { Posts } from "@/lib/types";
 import formatDate from "@/lib/format-date";
@@ -43,7 +44,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
           </button>
         )}
         {prevPage && (
-          <Link
+          <PaginationLink
             href={
               currentPage - 1 === 1
                 ? `/${basePath}/`
@@ -52,7 +53,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
             rel="prev"
           >
             Previous
-          </Link>
+          </PaginationLink>
         )}
         <span>
           {currentPage} of {totalPages}
@@ -66,9 +67,12 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
           </button>
         )}
         {nextPage && (
-          <Link href={`/${basePath}/page/${currentPage + 1}`} rel="next">
+          <PaginationLink
+            href={`/${basePath}/page/${currentPage + 1}`}
+            rel="next"
+          >
             Next
-          </Link>
+          </PaginationLink>
         )}
       </nav>
     </div>
