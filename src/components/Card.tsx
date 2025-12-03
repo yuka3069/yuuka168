@@ -1,3 +1,4 @@
+import ArrowLink from "./ArrowLink";
 import Image from "./Image";
 import Link from "./Link";
 import type { Project } from "@/constants/projectData";
@@ -42,15 +43,7 @@ const Card = ({ title, abstract, imgSrc, href }: Project) => (
         <p className="prose mb-3 max-w-none text-gray-500 dark:text-gray-400">
           {abstract}
         </p>
-        {href && (
-          <Link
-            href={href}
-            className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 text-base leading-6 font-medium"
-            aria-label={`Link to ${title}`}
-          >
-            Learn more &rarr;
-          </Link>
-        )}
+        {href && <ArrowLink href={href} title={title} />}
       </div>
     </div>
   </div>

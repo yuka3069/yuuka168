@@ -1,3 +1,4 @@
+import ArrowLink from "@/components/ArrowLink";
 import Link from "@/components/Link";
 import Tag from "@/components/Tag";
 import siteMetadata from "@/constants/siteMetadata";
@@ -63,13 +64,11 @@ export default function Home({ posts }: MainProps) {
                         </div>
                       </div>
                       <div className="text-base leading-6 font-medium">
-                        <Link
+                        <ArrowLink
                           href={`/blog/${slug}`}
-                          className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
-                          aria-label={`Read more: "${title}"`}
-                        >
-                          Read more &rarr;
-                        </Link>
+                          title={title}
+                          label="Read More"
+                        />
                       </div>
                     </div>
                   </div>

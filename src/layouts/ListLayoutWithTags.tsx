@@ -8,6 +8,7 @@ import PaginationLink from "@/components/PaginationLink";
 
 import { Posts } from "@/lib/types";
 import formatDate from "@/lib/format-date";
+import ArrowLink from "@/components/ArrowLink";
 
 interface PaginationProps {
   totalPages: number;
@@ -148,7 +149,10 @@ export default function ListLayoutWithTags({
               {displayPosts.map((post) => {
                 const { slug, date, title, abstract, categories } = post;
                 return (
-                  <li key={slug} className="py-5">
+                  <li
+                    key={slug}
+                    className="py-5 border-b-2 border-gray-200/60 dark:border-gray-700/60 last:border-none"
+                  >
                     <article className="flex flex-col space-y-2 xl:space-y-0">
                       <dl>
                         <dt className="sr-only">Published on</dt>
@@ -176,6 +180,12 @@ export default function ListLayoutWithTags({
                         </div>
                         <div className="prose max-w-none text-gray-500 dark:text-gray-400">
                           {abstract}
+                        </div>
+                        <div>
+                          <ArrowLink
+                            href={`/${basePath}/${slug}`}
+                            title={title}
+                          />
                         </div>
                       </div>
                     </article>
