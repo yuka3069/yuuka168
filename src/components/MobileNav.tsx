@@ -12,7 +12,7 @@ import {
   clearAllBodyScrollLocks,
 } from "body-scroll-lock";
 import { Fragment, useState, useEffect, useRef } from "react";
-import Link from "./Link";
+
 import NavigationLink from "./NavigationLink";
 import headerNavLinks from "@/constants/headerNavLinks";
 
