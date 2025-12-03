@@ -11,7 +11,7 @@ const nextConfig: any = {
   },
 
   outputFileTracingIncludes: {
-    "/*": ["./contents/**/*"],
+    "/*": ["./contents/**/*", "./zh-contents/**/*"],
   },
 };
 

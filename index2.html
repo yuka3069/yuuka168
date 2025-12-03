@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>竖版文字排版示例</title>
+    <style>
+      /* 容器样式 */
+      .container {
+        /* 核心属性：从上往下，从右往左 */
+        writing-mode: vertical-rl;
+
+        /* 辅助美化样式 */
+        font-family: "KaiTi", "楷体", serif; /* 楷体更有古风 */
+        height: 400px; /* 限制高度，超过会自动向左换行 */
+        margin: 50px auto; /* 居中 */
+        border: 1px solid #ccc;
+        padding: 20px;
+        font-size: 20px;
+        line-height: 2; /* 增加行间距（在竖排中即列间距） */
+        letter-spacing: 5px; /* 增加字间距 */
+        background-color: #f9f9f9;
+      }
+
+      /* 标题样式微调 */
+      h1 {
+        font-size: 32px;
+        font-weight: bold;
+        margin-left: 20px; /* 在竖排中，margin-bottom 变成了 margin-left */
+      }
+
+      /* 落款靠下对齐（在竖排中即靠左） */
+      .footer {
+        margin-top: auto; /* 自动填充顶部空间，把文字推到底部 */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>静夜思</h1>
+      <p>床前明月光，</p>
+      <p>疑是地上霜。</p>
+      <p>举头望明月，</p>
+      <p>低头思故乡。</p>
+
+      <p class="footer">李白 &bull; 唐</p>
+    </div>
+  </body>
+</html>

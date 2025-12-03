@@ -19,6 +19,7 @@ interface ListLayoutProps {
   initialDisplayPosts?: Posts;
   pagination?: PaginationProps;
   tagData: Record<string, number>;
+  basePath?: string;
 }
 
 function Pagination({ totalPages, currentPage }: PaginationProps) {
@@ -85,6 +86,7 @@ export default function ListLayoutWithTags({
   initialDisplayPosts = [],
   pagination,
   tagData,
+  basePath = "blog",
 }: ListLayoutProps) {
   const pathname = usePathname();
   const tagCounts = tagData as Record<string, number>;
@@ -160,7 +162,7 @@ export default function ListLayoutWithTags({
                         <div>
                           <h2 className="text-2xl leading-8 font-bold tracking-tight">
                             <Link
-                              href={`/blog/${slug}`}
+                              href={`/${basePath}/${slug}`}
                               className="text-gray-900 dark:text-gray-100"
                             >
                               {title}
