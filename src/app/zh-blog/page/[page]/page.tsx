@@ -2,7 +2,7 @@ import ListLayout from "@/layouts/ListLayoutWithTags";
 import {
   getAllCategoriesWithCount,
   getBlogPostList,
-} from "@/lib/zh-file-helpers";
+} from "@/lib/zhFile-helpers";
 
 const POSTS_PER_PAGE = 5;
 

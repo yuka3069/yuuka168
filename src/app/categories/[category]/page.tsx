@@ -3,7 +3,10 @@ import ListLayout from "@/layouts/ListLayoutWithTags";
 
 import { genPageMetadata } from "@/lib/seo";
 import { Metadata } from "next";
-import { getAllCategoriesWithCount, getBlogPostList } from "@/lib/file-helpers";
+import {
+  getAllCategoriesWithCount,
+  getBlogPostList,
+} from "@/lib/allFile-helpers";
 
 const POSTS_PER_PAGE = 5;
 const tagData = await getAllCategoriesWithCount();

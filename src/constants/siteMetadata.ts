@@ -1,12 +1,13 @@
 const siteMetadata = {
-  title: "Gemini.js Blog",
-  author: "CHATGPT",
-  headerTitle: "TailwindBlog",
-  description: "A blog created with Next.js and Tailwind.css",
+  title: "yuuka's blog",
+  author: "yuuka",
+  headerTitle: "yuuka blog",
+  description:
+    "yuuka sama's personal blog.web dev, hardware, personal records will be shared here",
   language: "en-us",
   theme: "system", // system, dark or light
-  siteUrl: "https://tailwind-nextjs-starter-blog.vercel.app",
-  siteRepo: "https://github.com/timlrx/tailwind-nextjs-starter-blog",
+  siteUrl: "https://yuuka168.com",
+  siteRepo: "https://github.com/yuka3069/yuuka168",
   siteLogo: `${process.env.BASE_PATH || ""}/static/images/logo.png`,
   socialBanner: `${process.env.BASE_PATH || ""}/static/images/twitter-card.png`,
   // mastodon: "https://mastodon.social/@mastodonuser",

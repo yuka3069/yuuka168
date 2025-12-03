@@ -1,5 +1,8 @@
 import ListLayout from "@/layouts/ListLayoutWithTags";
-import { getAllCategoriesWithCount, getBlogPostList } from "@/lib/file-helpers";
+import {
+  getAllCategoriesWithCount,
+  getBlogPostList,
+} from "@/lib/enFile-helpers";
 
 const POSTS_PER_PAGE = 5;
 

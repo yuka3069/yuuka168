@@ -9,7 +9,7 @@ import PostLayout from "@/layouts/PostLayout";
 import { Metadata } from "next";
 import siteMetadata from "@/constants/siteMetadata";
 import { notFound } from "next/navigation";
-import { getBlogPostList, loadBlogPost } from "@/lib/zh-file-helpers";
+import { getBlogPostList, loadBlogPost } from "@/lib/zhFile-helpers";
 import defaultAuthor from "@/constants/author";
 
 import { MDXRemote } from "next-mdx-remote/rsc";

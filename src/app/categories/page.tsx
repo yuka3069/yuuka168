@@ -2,7 +2,7 @@ import Link from "@/components/Link";
 import Tag from "@/components/Tag";
 
 import { genPageMetadata } from "@/lib/seo";
-import { getAllCategoriesWithCount } from "@/lib/file-helpers";
+import { getAllCategoriesWithCount } from "@/lib/allFile-helpers";
 
 export const metadata = genPageMetadata({
   title: "Tags",

@@ -2,7 +2,7 @@ import ListLayout from "@/layouts/ListLayoutWithTags";
 import {
   getAllCategoriesWithCount,
   getBlogPostList,
-} from "@/lib/zh-file-helpers";
+} from "@/lib/zhFile-helpers";
 // import { allCoreContent, sortPosts } from "pliny/utils/contentlayer";
 // import { allBlogs } from "contentlayer/generated";
 
