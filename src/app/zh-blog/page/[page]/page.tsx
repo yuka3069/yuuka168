@@ -1,8 +1,8 @@
 import ListLayout from "@/layouts/ListLayoutWithTags";
 import {
   getAllCategoriesWithCount,
-  getBlogPostList,
-} from "@/lib/zhFile-helpers";
+  getBlogPostListByLang,
+} from "@/lib/allFile-helpers";
 
 const POSTS_PER_PAGE = 5;
 
@@ -11,7 +11,7 @@ export default async function BlogPage(props: {
 }) {
   const params = await props.params;
   const pageNumber = parseInt(params?.page || "1", 10);
-  const allBlogs = await getBlogPostList();
+  const allBlogs = await getBlogPostListByLang("zh");
   const posts = allBlogs;
   const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
 
@@ -34,7 +34,6 @@ export default async function BlogPage(props: {
       pagination={pagination}
       title="All Posts"
       tagData={tagData}
-      basePath="zh-blog"
     />
   );
 }

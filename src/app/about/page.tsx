@@ -12,10 +12,8 @@ export default function Page() {
     <>
       <AuthorLayout content={defaultAuthor}>
         <p>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Excepturi
-          aperiam quo doloribus nisi quisquam deleniti ex ab consectetur quos?
-          Voluptatum praesentium ab labore doloribus incidunt commodi veniam
-          iusto beatae quaerat!
+          I often use discord to communicate with friends and colleagues. Feel
+          free to reach out to me there!
         </p>
         <p>
           Lorem, ipsum dolor sit amet consectetur adipisicing elit. Excepturi

@@ -5,12 +5,12 @@ import { genPageMetadata } from "@/lib/seo";
 import { Metadata } from "next";
 import {
   getAllCategoriesWithCount,
-  getBlogPostList,
+  getAllBlogPostList,
 } from "@/lib/allFile-helpers";
 
 const POSTS_PER_PAGE = 5;
 const tagData = await getAllCategoriesWithCount();
-const allBlogs = await getBlogPostList();
+const allBlogs = await getAllBlogPostList();
 
 export async function generateMetadata(props: {
   params: Promise<{ category: string }>;

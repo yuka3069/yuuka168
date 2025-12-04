@@ -20,7 +20,6 @@ interface ListLayoutProps {
   initialDisplayPosts?: Posts;
   pagination?: PaginationProps;
   tagData: Record<string, number>;
-  basePath?: string;
 }
 
 function Pagination({ totalPages, currentPage }: PaginationProps) {
@@ -87,7 +86,6 @@ export default function ListLayoutWithTags({
   initialDisplayPosts = [],
   pagination,
   tagData,
-  basePath = "blog",
 }: ListLayoutProps) {
   const pathname = usePathname();
   const tagCounts = tagData as Record<string, number>;
@@ -147,7 +145,8 @@ export default function ListLayoutWithTags({
           <div>
             <ul>
               {displayPosts.map((post) => {
-                const { slug, date, title, abstract, categories } = post;
+                const { slug, date, title, abstract, categories, lang } = post;
+                const basePath = lang === "en" ? "blog" : `${lang}-blog`;
                 return (
                   <li
                     key={slug}

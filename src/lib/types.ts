@@ -1,3 +1,5 @@
+import { BlogPost } from "@/lib/allFile-helpers";
+
 type TYear = `${number}${number}${number}${number}`;
 type TMonth = `${number}${number}`;
 type TDay = `${number}${number}`;
@@ -25,10 +27,4 @@ type TDateISOTime = `${THours}:${TMinutes}:${TSeconds}.${TMilliseconds}`;
  */
 export type TDateISO = `${TDateISODate}T${TDateISOTime}Z`;
 
-export type Posts = {
-  slug: string;
-  date: TDateISO;
-  title: string;
-  abstract: string;
-  categories: Array<string>;
-}[];
+export type Posts = BlogPost[];

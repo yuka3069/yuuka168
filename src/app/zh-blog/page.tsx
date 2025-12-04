@@ -1,14 +1,14 @@
 import ListLayout from "@/layouts/ListLayoutWithTags";
 import {
   getAllCategoriesWithCount,
-  getBlogPostList,
-} from "@/lib/zhFile-helpers";
+  getBlogPostListByLang,
+} from "@/lib/allFile-helpers";
 // import { allCoreContent, sortPosts } from "pliny/utils/contentlayer";
 // import { allBlogs } from "contentlayer/generated";
 
 const POSTS_PER_PAGE = 5;
 
-const allBlogs = await getBlogPostList();
+const allBlogs = await getBlogPostListByLang("zh");
 
 export const generateStaticParams = async () => {
   const totalPages = Math.ceil(allBlogs.length / POSTS_PER_PAGE);
@@ -46,7 +46,6 @@ export default async function BlogPage(props: {
       pagination={pagination}
       title="All Posts"
       tagData={tagData}
-      basePath="zh-blog"
     />
   );
 }

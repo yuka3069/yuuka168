@@ -9,7 +9,7 @@ import PostLayout from "@/layouts/PostLayout";
 import { Metadata } from "next";
 import siteMetadata from "@/constants/siteMetadata";
 import { notFound } from "next/navigation";
-import { getBlogPostList, loadBlogPost } from "@/lib/zhFile-helpers";
+import { getBlogPostListByLang, loadBlogPost } from "@/lib/allFile-helpers";
 import defaultAuthor from "@/constants/author";
 
 import { MDXRemote } from "next-mdx-remote/rsc";
@@ -17,7 +17,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 export async function generateMetadata(props: {
   params: Promise<{ slug: string[] }>;
 }): Promise<Metadata | undefined> {
-  const allBlogs = await getBlogPostList();
+  const allBlogs = await getBlogPostListByLang("zh");
   const params = await props.params;
   const slug = decodeURI(params.slug.join("/"));
 
@@ -71,7 +71,7 @@ export async function generateMetadata(props: {
 }
 
 export const generateStaticParams = async () => {
-  const allBlogs = await getBlogPostList();
+  const allBlogs = await getBlogPostListByLang("zh");
   return allBlogs.map((p) => ({
     slug: p.slug.split("/").map((name) => decodeURI(name)),
   }));
@@ -80,12 +80,11 @@ export const generateStaticParams = async () => {
 export default async function Page(props: {
   params: Promise<{ slug: string[] }>;
 }) {
-  const allBlogs = await getBlogPostList();
+  const allBlogs = await getBlogPostListByLang("zh");
   const params = await props.params;
   const slug = decodeURI(params.slug.join("/"));
   // Filter out drafts in production
-  const sortedCoreContents = await getBlogPostList();
-
+  const sortedCoreContents = await getBlogPostListByLang("zh");
   const postIndex = sortedCoreContents.findIndex((p) => p.slug === slug);
   if (postIndex === -1) {
     return notFound();
@@ -99,7 +98,7 @@ export default async function Page(props: {
     return notFound();
   }
 
-  const { content: mainContent } = await loadBlogPost(post.slug);
+  const { content: mainContent } = await loadBlogPost("zh", post.slug);
 
   const layoutContent = {
     slug: post.slug,
@@ -120,6 +119,7 @@ export default async function Page(props: {
         authorDetails={authorDetails}
         next={next}
         prev={prev}
+        basePath="zh-blog"
       >
         <MDXRemote source={mainContent} components={COMPONENT_MAP} />
       </PostLayout>

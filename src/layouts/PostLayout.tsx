@@ -8,6 +8,7 @@ import Tag from "@/components/Tag";
 import ScrollTopAndComment from "@/components/ScrollTopAndComment";
 import siteMetadata from "@/constants/siteMetadata";
 import { TDateISO } from "@/lib/types";
+import ArrowLink from "@/components/ArrowLink";
 
 interface Author {
   name: string;
@@ -28,6 +29,7 @@ interface LayoutProps {
   next?: { slug: string; title: string };
   prev?: { slug: string; title: string };
   children: ReactNode;
+  basePath?: string;
 }
 
 const postDateTemplate: Intl.DateTimeFormatOptions = {
@@ -50,6 +52,7 @@ export default function PostLayout({
   next,
   prev,
   children,
+  basePath = "blog",
 }: LayoutProps) {
   const { slug, date, title, categories } = content;
 
@@ -168,7 +171,12 @@ export default function PostLayout({
                           Previous Article
                         </h2>
                         <div className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
-                          <Link href={`/blog/${prev.slug}`}>{prev.title}</Link>
+                          <ArrowLink
+                            href={`/${basePath}/${prev.slug}`}
+                            label={prev.title}
+                            title="Previous article"
+                            direction="left"
+                          />
                         </div>
                       </div>
                     )}
@@ -178,7 +186,11 @@ export default function PostLayout({
                           Next Article
                         </h2>
                         <div className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
-                          <Link href={`/blog/${next.slug}`}>{next.title}</Link>
+                          <ArrowLink
+                            href={`/${basePath}/${next.slug}`}
+                            label={next.title}
+                            title="Next article"
+                          />
                         </div>
                       </div>
                     )}
@@ -188,7 +200,7 @@ export default function PostLayout({
 
               <div className="pt-4 xl:pt-8">
                 <Link
-                  href={`/blog`}
+                  href={`/${basePath}`}
                   className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
                   aria-label="Back to the blog"
                 >
