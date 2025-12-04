@@ -18,7 +18,7 @@ import { getBlogPostListByLang, loadBlogPost } from "@/lib/allFile-helpers";
 export async function generateMetadata(props: {
   params: Promise<{ slug: string[] }>;
 }): Promise<Metadata | undefined> {
-  const allBlogs = await getBlogPostListByLang("zh");
+  const allBlogs = await getBlogPostListByLang("en");
   const params = await props.params;
   const slug = decodeURI(params.slug.join("/"));
 
@@ -72,7 +72,7 @@ export async function generateMetadata(props: {
 }
 
 export const generateStaticParams = async () => {
-  const allBlogs = await getBlogPostListByLang("zh");
+  const allBlogs = await getBlogPostListByLang("en");
   return allBlogs.map((p) => ({
     slug: p.slug.split("/").map((name) => decodeURI(name)),
   }));
@@ -81,11 +81,11 @@ export const generateStaticParams = async () => {
 export default async function Page(props: {
   params: Promise<{ slug: string[] }>;
 }) {
-  const allBlogs = await getBlogPostListByLang("zh");
+  const allBlogs = await getBlogPostListByLang("en");
   const params = await props.params;
   const slug = decodeURI(params.slug.join("/"));
   // Filter out drafts in production
-  const sortedCoreContents = await getBlogPostListByLang("zh");
+  const sortedCoreContents = await getBlogPostListByLang("en");
 
   const postIndex = sortedCoreContents.findIndex((p) => p.slug === slug);
   if (postIndex === -1) {
@@ -100,7 +100,7 @@ export default async function Page(props: {
     return notFound();
   }
 
-  const { content: mainContent } = await loadBlogPost("zh", post.slug);
+  const { content: mainContent } = await loadBlogPost("en", post.slug);
 
   const layoutContent = {
     slug: post.slug,
