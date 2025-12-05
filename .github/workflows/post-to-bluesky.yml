@@ -1,0 +1,113 @@
+name: Post new blog to Bluesky (After Vercel Deploy)
+
+# 1. 触发条件
+on:
+  # 监听 deployment_status 事件
+  deployment_status:
+
+jobs:
+  bluesky-post-on-success:
+    # 只有当部署状态是 'success' 时才运行此作业
+    if: github.event.deployment_status.state == 'success'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检查部署环境
+        run: |
+          echo "Deployment Environment: ${{ github.event.deployment.environment }}"
+          echo "Deployment Ref (Branch/SHA): ${{ github.event.deployment.ref }}"
+
+      # 仅处理 main 分支的生产环境部署
+      - name: 检查是否为 'main' 分支的生产部署
+        if: github.event.deployment.environment != 'Production' || github.event.deployment.ref != 'main'
+        run: |
+          echo "Skipping Bluesky post: Not a successful 'main' branch Production deployment."
+          exit 0 # 提前退出作业，不执行后续步骤
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        # 必须检出 Vercel 刚刚部署的那个提交
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          # Fetch the previous commit as well to compare changes
+          fetch-depth: 2
+
+      # ----------------------------------------------------
+      # 以下步骤和您原有的逻辑类似，但 'git diff' 的用法需要调整
+      # ----------------------------------------------------
+
+      - name: Detect new MDX files
+        id: changes
+        run: |
+          # 比较当前提交 (HEAD) 和前一个提交 (HEAD~1) 的文件变动
+          # 注意：Vercel 部署通常针对整个仓库的 SHA，所以这个 diff 是准确的
+          NEW_FILES=$(git diff --name-status HEAD~1 HEAD | awk '$1=="A" && $2 ~ /\.mdx$/ {print $2}')
+          echo "new_files=$NEW_FILES" >> $GITHUB_OUTPUT
+
+      - name: If no new files, stop
+        if: steps.changes.outputs.new_files == ''
+        run: echo "No new blog posts detected in this deployment."
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install gray-matter @atproto/api
+        # Vercel 部署完成后，所有的文件和依赖都在该提交中，可以直接安装
+
+      - name: Post each new article to Bluesky
+        if: steps.changes.outputs.new_files != ''
+        run: |
+          for file in ${{ steps.changes.outputs.new_files }}; do
+            echo "Processing $file"
+            
+            # 提取 title (从 frontmatter)
+            TITLE=$(node - <<EOF
+            const fs = require("fs");
+            const matter = require("gray-matter");
+            const content = fs.readFileSync("$file", "utf8");
+            const data = matter(content).data;
+            console.log(data.title || "$file");
+            EOF
+            )
+
+            # ----------------------------------------------------
+            # 关键修改：使用自定义域名/稳定域名
+            # ----------------------------------------------------
+            
+            # 确保链接在部署成功后是可访问的
+            # 假设您的博客路径格式为 /blog/[slug]
+            SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+            POST_URL="${{ env.BLOG_DOMAIN }}/blog/${SLUG}"
+            
+            echo "Generated URL: $POST_URL"
+
+            # 发到 Bluesky
+            node - <<EOF
+            import { BskyAgent } from "@atproto/api";
+            const agent = new BskyAgent({ service: "https://bsky.social" });
+
+            const USERNAME = process.env.BLUESKY_USERNAME;
+            const PASSWORD = process.env.BLUESKY_PASSWORD;
+            const POST_URL = "$POST_URL"; // 使用 Bash/Env 变量
+
+            await agent.login({ identifier: USERNAME, password: PASSWORD });
+
+            const text = \`📢 新博客发布：${TITLE}\n\n阅读链接：\${POST_URL}\`;
+
+            await agent.post({
+              text,
+            });
+
+            console.log("Posted to Bluesky:", text);
+            EOF
+
+          done
+        env:
+          BLUESKY_USERNAME: ${{ secrets.BLUESKY_USERNAME }}
+          BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
+          # ❗️ 替换为您的自定义域名，这是部署成功后能稳定访问的域名
+          BLOG_DOMAIN: https://yuuka168.com # 或者您的自定义域名

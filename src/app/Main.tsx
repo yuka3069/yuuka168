@@ -31,7 +31,9 @@ export default function Home({ posts }: MainProps) {
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {!posts.length && "No posts found."}
           {posts.slice(0, MAX_DISPLAY).map((post) => {
-            const { slug, date, title, abstract, categories } = post;
+            const { slug, date, title, abstract, categories, lang } = post;
+            const baseURL = lang === "en" ? "/blog" : "/zh-blog";
+
             return (
               <li key={slug} className="py-12">
                 <article>
@@ -65,7 +67,7 @@ export default function Home({ posts }: MainProps) {
                       </div>
                       <div className="text-base leading-6 font-medium">
                         <ArrowLink
-                          href={`/blog/${slug}`}
+                          href={`${baseURL}/${slug}`}
                           title={title}
                           label="Read More"
                         />

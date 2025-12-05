@@ -1,6 +1,5 @@
 import siteMetadata from "@/constants/siteMetadata";
 import ListLayout from "@/layouts/ListLayoutWithTags";
-
 import { genPageMetadata } from "@/lib/seo";
 import { Metadata } from "next";
 import {
@@ -9,8 +8,6 @@ import {
 } from "@/lib/allFile-helpers";
 
 const POSTS_PER_PAGE = 5;
-const tagData = await getAllCategoriesWithCount();
-const allBlogs = await getAllBlogPostList();
 
 export async function generateMetadata(props: {
   params: Promise<{ category: string }>;
@@ -23,17 +20,17 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: "./",
       types: {
-        "application/rss+xml": `${siteMetadata.siteUrl}/tags/${tag}/feed.xml`,
+        "application/rss+xml": `${siteMetadata.siteUrl}/categories/${tag}/feed.xml`,
       },
     },
   });
 }
 
 export const generateStaticParams = async () => {
-  const tagCounts = tagData as Record<string, number>;
-  const tagKeys = Object.keys(tagCounts);
+  const tagData = await getAllCategoriesWithCount();
+  const tagKeys = Object.keys(tagData);
   return tagKeys.map((tag) => ({
-    tag: encodeURI(tag),
+    category: encodeURI(tag),
   }));
 };
 
@@ -42,6 +39,9 @@ export default async function CategoryPage(props: {
 }) {
   const params = await props.params;
   const category = decodeURI(params.category);
+  const tagData = await getAllCategoriesWithCount();
+  const allBlogs = await getAllBlogPostList();
+
   const title =
     category[0].toUpperCase() + category.split(" ").join("-").slice(1);
   const filteredPosts = allBlogs.filter((post) =>
@@ -62,6 +62,7 @@ export default async function CategoryPage(props: {
       pagination={pagination}
       title={title}
       tagData={tagData}
+      categoryName={category}
     />
   );
 }
