@@ -76,14 +76,13 @@ jobs:
             fi
             
             # --- 2. 提取 Title (从 frontmatter) ---
-            TITLE=$(node - <<EOF
-const fs = require("fs");
-const matter = require("gray-matter");
-const content = fs.readFileSync("$file", "utf8");
-const data = matter(content).data;
-console.log(data.title || "$file");
-EOF
-) 
+            TITLE=$(node -e "
+              const fs = require('fs');
+              const matter = require('gray-matter');
+              const content = fs.readFileSync('$file', 'utf8');
+              const data = matter(content).data;
+              console.log(data.title || '$file');
+            ") 
             # ⬆️ 这一行结束了 Bash 的命令替换，不能有额外的缩进。
 
             # --- 3. 从文件名生成 SLUG (最可靠的方式) ---
@@ -96,25 +95,36 @@ EOF
             echo "Generated URL: $POST_URL"
 
             # --- 5. 发到 Bluesky ---
-            node - <<EOF
-import { BskyAgent } from "@atproto/api";
-const agent = new BskyAgent({ service: "https://bsky.social" });
-
-const USERNAME = process.env.BLUESKY_USERNAME;
-const PASSWORD = process.env.BLUESKY_PASSWORD;
-const POST_URL_JS = "$POST_URL";
-const ARTICLE_TITLE = "$TITLE";
-
-await agent.login({ identifier: USERNAME, password: PASSWORD });
-
-const text = \`📢 新博客发布：${ARTICLE_TITLE}\n\n阅读链接：\${POST_URL_JS}\`;
-
-await agent.post({
-  text,
-});
-
-console.log("Posted to Bluesky:", text);
-EOF 
+            node -e "
+              const { BskyAgent } = require('@atproto/api');
+              
+              (async () => {
+                try {
+                  const agent = new BskyAgent({ service: 'https://bsky.social' });
+                  
+                  const USERNAME = process.env.BLUESKY_USERNAME;
+                  const PASSWORD = process.env.BLUESKY_PASSWORD;
+                  const POST_URL_JS = '$POST_URL';
+                  const ARTICLE_TITLE = '$TITLE';
+                  
+                  if (!USERNAME || !PASSWORD) {
+                    console.error('Missing Bluesky credentials');
+                    process.exit(1);
+                  }
+                  
+                  await agent.login({ identifier: USERNAME, password: PASSWORD });
+                  
+                  const text = \`📢 新博客发布：\${ARTICLE_TITLE}\n\n阅读链接：\${POST_URL_JS}\`;
+                  
+                  await agent.post({ text });
+                  
+                  console.log('Posted to Bluesky:', text);
+                } catch (error) {
+                  console.error('Error posting to Bluesky:', error);
+                  process.exit(1);
+                }
+              })();
+            " 
 
           done
         env:
