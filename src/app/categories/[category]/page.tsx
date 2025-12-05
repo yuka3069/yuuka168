@@ -13,7 +13,7 @@ export async function generateMetadata(props: {
   params: Promise<{ category: string }>;
 }): Promise<Metadata> {
   const params = await props.params;
-  const tag = decodeURI(params.category);
+  const tag = decodeURIComponent(params.category);
   return genPageMetadata({
     title: tag,
     description: `${siteMetadata.title} ${tag} tagged content`,
@@ -30,7 +30,7 @@ export const generateStaticParams = async () => {
   const tagData = await getAllCategoriesWithCount();
   const tagKeys = Object.keys(tagData);
   return tagKeys.map((tag) => ({
-    category: encodeURI(tag),
+    category: encodeURIComponent(tag),
   }));
 };
 
@@ -38,7 +38,7 @@ export default async function CategoryPage(props: {
   params: Promise<{ category: string }>;
 }) {
   const params = await props.params;
-  const category = decodeURI(params.category);
+  const category = decodeURIComponent(params.category);
   const tagData = await getAllCategoriesWithCount();
   const allBlogs = await getAllBlogPostList();
 

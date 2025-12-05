@@ -14,7 +14,7 @@ export async function generateMetadata(props: {
   params: Promise<{ category: string; page: string }>;
 }): Promise<Metadata> {
   const params = await props.params;
-  const category = decodeURI(params.category);
+  const category = decodeURIComponent(params.category);
   const page = params.page;
   return genPageMetadata({
     title: `${category} - Page ${page}`,
@@ -44,7 +44,7 @@ export const generateStaticParams = async () => {
     // 生成所有分页路径
     for (let i = 1; i <= totalPages; i++) {
       paths.push({
-        category: encodeURI(tag),
+        category: encodeURIComponent(tag),
         page: i.toString(),
       });
     }
@@ -57,7 +57,7 @@ export default async function CategoryPageWithPagination(props: {
   params: Promise<{ category: string; page: string }>;
 }) {
   const params = await props.params;
-  const category = decodeURI(params.category);
+  const category = decodeURIComponent(params.category);
   const pageNumber = parseInt(params.page, 10);
 
   if (isNaN(pageNumber) || pageNumber < 1) {

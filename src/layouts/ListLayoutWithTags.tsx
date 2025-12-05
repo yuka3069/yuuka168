@@ -36,8 +36,8 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
     basePath = "zh-blog";
   } else if (pathname.startsWith("/categories/")) {
     // 对于 categories，保持完整路径
-    const categoryName = segments[2]; // /categories/[category]/...
-    basePath = `categories/${categoryName}`;
+    const categoryName = decodeURIComponent(segments[2]); // /categories/[category]/...
+    basePath = `categories/${encodeURIComponent(categoryName)}`;
   }
 
   const prevPage = currentPage - 1 > 0;
@@ -113,7 +113,8 @@ export default function ListLayoutWithTags({
   // 检测是否在 categories 页面
   const isInCategories = pathname.startsWith("/categories/");
   const currentCategory =
-    categoryName || (isInCategories ? pathname.split("/")[2] : null);
+    categoryName ||
+    (isInCategories ? decodeURIComponent(pathname.split("/")[2]) : null);
 
   return (
     <>
@@ -149,7 +150,7 @@ export default function ListLayoutWithTags({
                         </h3>
                       ) : (
                         <Link
-                          href={`/categories/${t}`}
+                          href={`/categories/${encodeURIComponent(t)}`}
                           className="hover:text-primary-500 dark:hover:text-primary-500 px-3 py-2 text-sm font-medium text-gray-500 uppercase dark:text-gray-300"
                           aria-label={`View posts tagged ${t}`}
                         >
