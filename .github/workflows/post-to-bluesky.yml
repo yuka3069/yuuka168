@@ -84,6 +84,7 @@ const data = matter(content).data;
 console.log(data.title || "$file");
 EOF
 ) 
+            # ⬆️ 这一行结束了 Bash 的命令替换，不能有额外的缩进。
 
             # --- 3. 从文件名生成 SLUG (最可靠的方式) ---
             FILENAME=$(basename "$file") 
