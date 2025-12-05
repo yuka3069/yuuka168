@@ -37,8 +37,19 @@ jobs:
         run: |
           # 查找 zh-contents/ 或 contents/ 目录下新增的 .mdx 文件
           # ^(zh-contents\/|contents\/) 确保匹配开头是这两个目录之一
-          NEW_FILES=$(git diff --name-status HEAD~1 HEAD | awk '$1=="A" && $2 ~ /^(zh-contents\/|contents\/).*\.mdx$/ {print $2}')
-          echo "new_files=$NEW_FILES" >> $GITHUB_OUTPUT
+          NEW_FILES=$(git diff --name-status HEAD~1 HEAD | awk '$1=="A" && $2 ~ /^(zh-contents\/|contents\/).*\.mdx$/ {print $2}' | tr '\n' ' ')
+
+          # 移除末尾空格并设置输出
+          NEW_FILES=$(echo "$NEW_FILES" | sed 's/[[:space:]]*$//')
+
+          echo "Detected new files: $NEW_FILES"
+
+          # 使用多行输出格式避免特殊字符问题
+          {
+            echo "new_files<<EOF"
+            echo "$NEW_FILES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: If no new files, stop
         if: steps.changes.outputs.new_files == ''
