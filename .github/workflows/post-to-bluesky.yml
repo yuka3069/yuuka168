@@ -29,14 +29,10 @@ jobs:
           # Fetch the previous commit as well to compare changes
           fetch-depth: 2
 
-      # ----------------------------------------------------
-      # 🚀 修改 1: Detect new MDX files - 限定路径
-      # ----------------------------------------------------
       - name: Detect new MDX files
         id: changes
         run: |
           # 查找 zh-contents/ 或 contents/ 目录下新增的 .mdx 文件
-          # ^(zh-contents\/|contents\/) 确保匹配开头是这两个目录之一
           NEW_FILES=$(git diff --name-status HEAD~1 HEAD | awk '$1=="A" && $2 ~ /^(zh-contents\/|contents\/).*\.mdx$/ {print $2}' | tr '\n' ' ')
 
           # 移除末尾空格并设置输出
@@ -63,9 +59,6 @@ jobs:
       - name: Install dependencies
         run: npm install gray-matter @atproto/api
 
-      # ----------------------------------------------------
-      # 🚀 修改 2: Post each new article to Bluesky - 动态生成 URL
-      # ----------------------------------------------------
       - name: Post each new article to Bluesky
         if: steps.changes.outputs.new_files != ''
         run: |
@@ -78,24 +71,23 @@ jobs:
             elif [[ "$file" == contents/* ]]; then
               PATH_PREFIX="blog"
             else
-              # 理论上不会发生，因为上面的步骤已经过滤了
               echo "Error: File $file does not match expected content directories. Skipping."
               continue
             fi
             
             # --- 2. 提取 Title (从 frontmatter) ---
             TITLE=$(node - <<EOF
-            const fs = require("fs");
-            const matter = require("gray-matter");
-            const content = fs.readFileSync("$file", "utf8");
-            const data = matter(content).data;
-            console.log(data.title || "$file");
-            EOF
-            )
+const fs = require("fs");
+const matter = require("gray-matter");
+const content = fs.readFileSync("$file", "utf8");
+const data = matter(content).data;
+console.log(data.title || "$file");
+EOF
+) 
 
             # --- 3. 从文件名生成 SLUG (最可靠的方式) ---
             FILENAME=$(basename "$file") 
-            SLUG="${FILENAME%.*}" # 移除 .mdx 扩展名
+            SLUG="${FILENAME%.*}"
             
             # --- 4. 组合最终 URL ---
             POST_URL="${{ env.BLOG_DOMAIN }}/${PATH_PREFIX}/${SLUG}"
@@ -104,24 +96,24 @@ jobs:
 
             # --- 5. 发到 Bluesky ---
             node - <<EOF
-            import { BskyAgent } from "@atproto/api";
-            const agent = new BskyAgent({ service: "https://bsky.social" });
+import { BskyAgent } from "@atproto/api";
+const agent = new BskyAgent({ service: "https://bsky.social" });
 
-            const USERNAME = process.env.BLUESKY_USERNAME;
-            const PASSWORD = process.env.BLUESKY_PASSWORD;
-            const POST_URL_JS = "$POST_URL"; // 使用 Bash/Env 变量
-            const ARTICLE_TITLE = "$TITLE";
+const USERNAME = process.env.BLUESKY_USERNAME;
+const PASSWORD = process.env.BLUESKY_PASSWORD;
+const POST_URL_JS = "$POST_URL";
+const ARTICLE_TITLE = "$TITLE";
 
-            await agent.login({ identifier: USERNAME, password: PASSWORD });
+await agent.login({ identifier: USERNAME, password: PASSWORD });
 
-            const text = \`📢 新博客发布：${ARTICLE_TITLE}\n\n阅读链接：\${POST_URL_JS}\`;
+const text = \`📢 新博客发布：${ARTICLE_TITLE}\n\n阅读链接：\${POST_URL_JS}\`;
 
-            await agent.post({
-              text,
-            });
+await agent.post({
+  text,
+});
 
-            console.log("Posted to Bluesky:", text);
-            EOF
+console.log("Posted to Bluesky:", text);
+EOF 
 
           done
         env:
