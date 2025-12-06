@@ -29,8 +29,12 @@ export async function generateMetadata(props: {
 export const generateStaticParams = async () => {
   const tagData = await getAllCategoriesWithCount();
   const tagKeys = Object.keys(tagData);
+  // Return the raw tag value here. Next.js will handle encoding when
+  // generating static routes; returning an already-encoded value can
+  // create mismatches between the built path and runtime requests
+  // (e.g. Vercel serving /categories/%E4... vs browser requesting /categories/中文).
   return tagKeys.map((tag) => ({
-    category: encodeURIComponent(tag),
+    category: tag,
   }));
 };
 

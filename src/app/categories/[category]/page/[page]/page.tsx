@@ -43,8 +43,11 @@ export const generateStaticParams = async () => {
 
     // 生成所有分页路径
     for (let i = 1; i <= totalPages; i++) {
+      // Return raw tag for the same reason as above: let Next.js handle
+      // encoding. Returning an encoded value here can cause the built
+      // static path to not match unencoded runtime requests.
       paths.push({
-        category: encodeURIComponent(tag),
+        category: tag,
         page: i.toString(),
       });
     }
