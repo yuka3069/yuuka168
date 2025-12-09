@@ -8,8 +8,8 @@ const siteMetadata = {
   theme: "system", // system, dark or light
   siteUrl: "https://yuuka168.com",
   siteRepo: "https://github.com/yuka3069/yuuka168",
-  siteLogo: `${process.env.BASE_PATH || ""}/static/images/logo.png`,
-  socialBanner: `${process.env.BASE_PATH || ""}/static/images/twitter-card.png`,
+  siteLogo: `${process.env.BASE_PATH || ""}/images/logo.png`,
+  socialBanner: `${process.env.BASE_PATH || ""}/images/twitter-card.png`,
   // mastodon: "https://mastodon.social/@mastodonuser",
   email: "chengmy3@qq.com",
   github: "https://github.com/yuka3069",

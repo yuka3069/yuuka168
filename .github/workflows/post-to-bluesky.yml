@@ -1,13 +1,11 @@
 name: Post new blog to Bluesky (After Vercel Deploy)
 
-# 1. 触发条件
 on:
   deployment_status:
 
 jobs:
   bluesky-post-on-success:
     if: github.event.deployment_status.state == 'success'
-
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +24,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.deployment.sha }}
-          # Fetch the previous commit as well to compare changes
           fetch-depth: 2
 
       - name: Detect new MDX files
@@ -34,13 +31,10 @@ jobs:
         run: |
           # 查找 zh-contents/ 或 contents/ 目录下新增的 .mdx 文件
           NEW_FILES=$(git diff --name-status HEAD~1 HEAD | awk '$1=="A" && $2 ~ /^(zh-contents\/|contents\/).*\.mdx$/ {print $2}' | tr '\n' ' ')
-
-          # 移除末尾空格并设置输出
           NEW_FILES=$(echo "$NEW_FILES" | sed 's/[[:space:]]*$//')
 
           echo "Detected new files: $NEW_FILES"
 
-          # 使用多行输出格式避免特殊字符问题
           {
             echo "new_files<<EOF"
             echo "$NEW_FILES"
@@ -56,8 +50,9 @@ jobs:
         with:
           node-version: 20
 
+      # 新增 mime-types 依赖
       - name: Install dependencies
-        run: npm install gray-matter @atproto/api
+        run: npm install gray-matter @atproto/api mime-types
 
       - name: Post each new article to Bluesky
         if: steps.changes.outputs.new_files != ''
@@ -75,37 +70,58 @@ jobs:
               continue
             fi
             
-            # --- 2. 提取 Title (从 frontmatter) ---
-            TITLE=$(node -e "
-              const fs = require('fs');
-              const matter = require('gray-matter');
-              const content = fs.readFileSync('$file', 'utf8');
-              const data = matter(content).data;
-              console.log(data.title || '$file');
-            ") 
-            # ⬆️ 这一行结束了 Bash 的命令替换，不能有额外的缩进。
-
-            # --- 3. 从文件名生成 SLUG (最可靠的方式) ---
+            # --- 2. 从文件名生成 SLUG ---
             FILENAME=$(basename "$file") 
             SLUG="${FILENAME%.*}"
             
-            # --- 4. 组合最终 URL ---
+            # --- 3. 组合最终 URL ---
             POST_URL="${{ env.BLOG_DOMAIN }}/${PATH_PREFIX}/${SLUG}"
-            
             echo "Generated URL: $POST_URL"
 
-            # --- 5. 发到 Bluesky ---
+            # --- 4. Node.js 脚本：读取元数据并发送带有缩略图的卡片 ---
             node -e "
+              const fs = require('fs');
+              const path = require('path');
+              const matter = require('gray-matter');
               const { BskyAgent } = require('@atproto/api');
-              
+              const mime = require('mime-types');
+
               (async () => {
                 try {
-                  const agent = new BskyAgent({ service: 'https://bsky.social' });
+                  // --- A. 读取 MDX 获取 Title, Summary, Image ---
+                  const fileContent = fs.readFileSync('$file', 'utf8');
+                  const { data } = matter(fileContent);
                   
+                  const title = data.title || '$file';
+                  // 使用 summary 或 description，如果没有则留空
+                  const description = data.summary || data.description || ''; 
+                  
+                  // --- B. 确定图片路径 (优先级: Frontmatter > 默认 banner) ---
+                  // 假设 repo 根目录就是 checkout 的目录
+                  let imagePath = 'public/images/twitter-card.png'; // 默认回退 (siteMetadata.socialBanner)
+                  
+                  if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+                    imagePath = path.join('public', data.images[0]);
+                  } else if (data.image) {
+                     imagePath = path.join('public', data.image);
+                  }
+
+                  // 修正路径：有些 Next.js配置中引用图片可能带 /static 或直接 /images
+                  // 如果路径以 / 开头，去掉它以便 fs.readFileSync 能找到 (相对于当前工作目录)
+                  if (imagePath.startsWith('/')) {
+                    imagePath = imagePath.substring(1); 
+                    // 如果不是以 public 开头，加上 public (Next.js 惯例)
+                    if (!imagePath.startsWith('public/')) {
+                         imagePath = path.join('public', imagePath);
+                    }
+                  }
+
+                  console.log('Target Image Path:', imagePath);
+
+                  // --- C. 登录 Bluesky ---
+                  const agent = new BskyAgent({ service: 'https://bsky.social' });
                   const USERNAME = process.env.BLUESKY_USERNAME;
                   const PASSWORD = process.env.BLUESKY_PASSWORD;
-                  const POST_URL_JS = '$POST_URL';
-                  const ARTICLE_TITLE = '$TITLE';
                   
                   if (!USERNAME || !PASSWORD) {
                     console.error('Missing Bluesky credentials');
@@ -113,12 +129,44 @@ jobs:
                   }
                   
                   await agent.login({ identifier: USERNAME, password: PASSWORD });
+
+                  // --- D. 上传图片 Blob (如果图片存在) ---
+                  let thumbBlob = undefined;
                   
-                  const text = \`📢 新博客发布：\${ARTICLE_TITLE}\n\n阅读链接：\${POST_URL_JS}\`;
+                  if (fs.existsSync(imagePath)) {
+                    const fileBuf = fs.readFileSync(imagePath);
+                    const mimeType = mime.lookup(imagePath) || 'image/jpeg';
+                    
+                    // 限制上传大小 (Bluesky 限制约 1MB，这里做个简单检查，一般 banner 不会太大)
+                    if (fileBuf.length < 900000) {
+                        const { data: uploadData } = await agent.uploadBlob(fileBuf, { encoding: mimeType });
+                        thumbBlob = uploadData.blob;
+                        console.log('Image uploaded successfully.');
+                    } else {
+                        console.warn('Image too large for Bluesky blob (>900kb), skipping thumbnail.');
+                    }
+                  } else {
+                    console.warn('Image file not found on disk:', imagePath);
+                  }
+
+                  // --- E. 发送带有 Embed Card 的帖子 ---
+                  const postText = \`📢 新博客发布：\${title}\`;
                   
-                  await agent.post({ text });
+                  await agent.post({
+                    text: postText,
+                    embed: {
+                      \$type: 'app.bsky.embed.external',
+                      external: {
+                        uri: '$POST_URL',
+                        title: title,
+                        description: description,
+                        thumb: thumbBlob // 如果是 undefined，Bluesky 会显示无图卡片
+                      }
+                    }
+                  });
                   
-                  console.log('Posted to Bluesky:', text);
+                  console.log('Posted to Bluesky with Link Card:', title);
+                  
                 } catch (error) {
                   console.error('Error posting to Bluesky:', error);
                   process.exit(1);
