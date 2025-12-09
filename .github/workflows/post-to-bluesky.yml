@@ -50,7 +50,6 @@ jobs:
         with:
           node-version: 20
 
-      # 新增 mime-types 依赖
       - name: Install dependencies
         run: npm install gray-matter @atproto/api mime-types
 
@@ -94,7 +93,7 @@ jobs:
                   
                   const title = data.title || '$file';
                   // 使用 summary 或 description，如果没有则留空
-                  const description = data.summary || data.description || ''; 
+                  const description = data.summary || data.description || data.abstract || ''; 
                   
                   // --- B. 确定图片路径 (优先级: Frontmatter > 默认 banner) ---
                   // 假设 repo 根目录就是 checkout 的目录
@@ -150,7 +149,7 @@ jobs:
                   }
 
                   // --- E. 发送带有 Embed Card 的帖子 ---
-                  const postText = \`📢 新博客发布：\${title}\`;
+                  const postText = \`\${title}: \n abstract:\${description}\`;
                   
                   await agent.post({
                     text: postText,
