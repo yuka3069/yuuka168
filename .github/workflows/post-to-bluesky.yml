@@ -149,7 +149,7 @@ jobs:
                   }
 
                   // --- E. 发送带有 Embed Card 的帖子 ---
-                  const postText = \`\${title}: \n abstract:\${description}\`;
+                  const postText = \`\${title}\n\${description}\`;
                   
                   await agent.post({
                     text: postText,
