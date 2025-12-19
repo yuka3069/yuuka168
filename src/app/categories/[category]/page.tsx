@@ -46,7 +46,7 @@ export default async function CategoryPage(props: {
   const tagData = await getAllCategoriesWithCount();
   const allBlogs = await getAllBlogPostList();
 
-  console.log("category:", category);
+  //console.log("category:", category);
 
   const title =
     category[0].toUpperCase() + category.split(" ").join("-").slice(1);
@@ -54,7 +54,7 @@ export default async function CategoryPage(props: {
     post.categories.includes(category)
   );
 
-  console.log("filteredPosts:", filteredPosts);
+  //console.log("filteredPosts:", filteredPosts);
 
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const initialDisplayPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
