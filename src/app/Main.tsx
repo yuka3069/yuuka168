@@ -50,7 +50,7 @@ export default function Home({ posts }: MainProps) {
                           <h2 className="text-2xl leading-8 font-bold tracking-tight">
                             <Link
                               href={`/blog/${slug}`}
-                              className="text-gray-900 dark:text-gray-100"
+                              className="text-gray-900 dark:text-gray-100 mb-3"
                             >
                               {title}
                             </Link>

@@ -138,14 +138,14 @@ export default function PostLayout({
                 <Link href={"/"}>View on GitHub(Not allowed now)</Link>
               </div>
 
-              {siteMetadata.comments && (
+              {/* {siteMetadata.comments && (
                 <div
                   className="pt-6 pb-6 text-center text-gray-700 dark:text-gray-300"
                   id="comment"
                 >
                   <Comments slug={slug} />
                 </div>
-              )}
+              )} */}
             </div>
 
             <footer>
