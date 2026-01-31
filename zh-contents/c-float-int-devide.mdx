@@ -1,0 +1,41 @@
+---
+title: "c-float-int-devide"
+abstract: 不像JavaScript，c中的整数除以整数只能是整数，对结果进行强制的类型转换只能在截断后进行。所以下次判断能否整除的时候，用余数更好。
+publishedOn: "2026-01-18T22:59:47-0500"
+category: ""
+---
+
+在分割矩阵的时候，需要判断能否根据blocksize恰好完美分割，如果不能的话，剩下的宽度是多少。
+所以，我使用了如下代码：
+
+```c
+    int flag = 0;
+    float temp = n / blocksize; // n x n矩阵，blocksize为每个子矩阵的宽度和高度
+
+    if((int)(n / blocksize) == temp){
+        flag = 0;
+    }else{
+        flag = 1;
+    }
+```
+
+假如此时n = 3, blocksize = 2, 实际上temp = 1.0，(int)(n / blocksize) = 1; 1 == 1.0。
+c中的整数除以整数只能是(_整数_)，对结果进行强制的类型转换只能在截断后进行。
+
+用余数来判断才是正确的：
+
+```c
+    int flag = 0;
+    int remains = n % blocksize; // n x n矩阵，blocksize为每个子矩阵的宽度和高度
+
+    if(remains = 0){
+        flag = 0;
+    }else{
+        flag = 1;
+    }
+```
+
+ps: 在JavaScript奇怪的+运算符中，字符串和数字的转化是在运算前准备的。
+这意味着 1 + "1" -> 1 + 1 -> 2
+"1" + 1 -> "1" + "1" -> "11"。
+显然c语言的更合理一些。just a reminder for js developers.
