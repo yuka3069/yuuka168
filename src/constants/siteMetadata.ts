@@ -2,8 +2,7 @@ const siteMetadata = {
   title: "yuuka's blog",
   author: "yuuka",
   headerTitle: "yuuka blog",
-  description:
-    "yuuka sama's personal blog.web dev, hardware, personal records will be shared here",
+  description: "recreational programming",
   language: "en-us",
   theme: "system", // system, dark or light
   siteUrl: "https://yuuka168.com",

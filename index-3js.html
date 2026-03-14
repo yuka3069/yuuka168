@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Three.js Dandelion</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+      // --- Setup ---
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000); // Black background
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000,
+      );
+      camera.position.set(0, 0, 10); // Position the camera to see the full scene
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // --- Stem ---
+      const stemMaterial = new THREE.MeshBasicMaterial({ color: 0x77dd77 }); // Green
+      const stemHeight = 6;
+      const stemGeometry = new THREE.CylinderGeometry(
+        0.05,
+        0.03,
+        stemHeight,
+        8,
+      ); // Thin cylinder for the stem
+      const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+      stem.position.y = -3; // Put it below the head
+      scene.add(stem);
+
+      // --- Dandelion Core (relative to stem, not world coordinates) ---
+      const coreRadius = 0.35;
+      const coreGeometry = new THREE.SphereGeometry(coreRadius, 24, 24);
+      const textureLoader = new THREE.TextureLoader();
+      const puffTexture = textureLoader.load(
+        "https://threejs.org/examples/textures/sprites/disc.png",
+      );
+      // Use puff texture directly on the core mesh.
+      const coreMaterial = new THREE.MeshBasicMaterial({
+        map: puffTexture,
+        color: 0xf4f1c9,
+        transparent: true,
+        opacity: 0.95,
+        depthWrite: false,
+      });
+      const dandelionCore = new THREE.Mesh(coreGeometry, coreMaterial);
+      dandelionCore.position.y = stemHeight / 2 + coreRadius / 2;
+      stem.add(dandelionCore);
+
+      //render
+      function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // --- Resizing ---
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.render(scene, camera);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+.customScroll::-webkit-scrollbar {
+  width: 5px;
+  /* 垂直于滚动条的宽度 */
+  height: 5px;
+  /* 和滚动条平行的宽度 */
+}

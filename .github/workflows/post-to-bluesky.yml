@@ -51,7 +51,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install gray-matter @atproto/api mime-types
+        run: npm install gray-matter @atproto/api mime-types canvas
 
       - name: Post each new article to Bluesky
         if: steps.changes.outputs.new_files != ''
@@ -77,17 +77,17 @@ jobs:
             POST_URL="${{ env.BLOG_DOMAIN }}/${PATH_PREFIX}/${SLUG}"
             echo "Generated URL: $POST_URL"
 
-            # --- 4. Node.js 脚本：读取元数据并发送带有缩略图的卡片 ---
+            # --- 4. Node.js 脚本：读取元数据、生成缩略图并发送带有缩略图的卡片 ---
             node -e "
               const fs = require('fs');
               const path = require('path');
               const matter = require('gray-matter');
               const { BskyAgent } = require('@atproto/api');
-              const mime = require('mime-types');
+              const { createCanvas } = require('canvas');
 
               (async () => {
                 try {
-                  // --- A. 读取 MDX 获取 Title, Summary, Image ---
+                  // --- A. 读取 MDX 获取 Title, Summary ---
                   const fileContent = fs.readFileSync('$file', 'utf8');
                   const { data } = matter(fileContent);
                   
@@ -95,27 +95,71 @@ jobs:
                   // 使用 summary 或 description，如果没有则留空
                   const description = data.summary || data.description || data.abstract || ''; 
                   
-                  // --- B. 确定图片路径 (优先级: Frontmatter > 默认 banner) ---
-                  // 假设 repo 根目录就是 checkout 的目录
-                  let imagePath = 'public/images/twitter-card.png'; // 默认回退 (siteMetadata.socialBanner)
-                  
-                  if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-                    imagePath = path.join('public', data.images[0]);
-                  } else if (data.image) {
-                     imagePath = path.join('public', data.image);
-                  }
+                  console.log('Article Title:', title);
 
-                  // 修正路径：有些 Next.js配置中引用图片可能带 /static 或直接 /images
-                  // 如果路径以 / 开头，去掉它以便 fs.readFileSync 能找到 (相对于当前工作目录)
-                  if (imagePath.startsWith('/')) {
-                    imagePath = imagePath.substring(1); 
-                    // 如果不是以 public 开头，加上 public (Next.js 惯例)
-                    if (!imagePath.startsWith('public/')) {
-                         imagePath = path.join('public', imagePath);
+                  // --- B. 生成 GitHub 风格的缩略图 ---
+                  const width = 1200;
+                  const height = 630;
+                  const canvas = createCanvas(width, height);
+                  const ctx = canvas.getContext('2d');
+                  
+                  // 创建渐变背景 (类似 GitHub 的紫色到蓝色渐变)
+                  const gradient = ctx.createLinearGradient(0, 0, width, height);
+                  gradient.addColorStop(0, '#667eea');    // 紫色
+                  gradient.addColorStop(1, '#764ba2');    // 深紫色
+                  ctx.fillStyle = gradient;
+                  ctx.fillRect(0, 0, width, height);
+                  
+                  // 设置文字样式
+                  ctx.fillStyle = '#ffffff';
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  
+                  // 根据标题长度动态调整字体大小
+                  let fontSize = 80;
+                  if (title.length > 50) {
+                    fontSize = 60;
+                  } else if (title.length > 30) {
+                    fontSize = 70;
+                  }
+                  
+                  ctx.font = \`bold \${fontSize}px sans-serif\`;
+                  
+                  // 处理长标题的换行
+                  const maxWidth = width - 100; // 左右留边距
+                  const words = title.split(' ');
+                  const lines = [];
+                  let currentLine = words[0];
+                  
+                  for (let i = 1; i < words.length; i++) {
+                    const word = words[i];
+                    const testLine = currentLine + ' ' + word;
+                    const metrics = ctx.measureText(testLine);
+                    
+                    if (metrics.width > maxWidth) {
+                      lines.push(currentLine);
+                      currentLine = word;
+                    } else {
+                      currentLine = testLine;
                     }
                   }
-
-                  console.log('Target Image Path:', imagePath);
+                  lines.push(currentLine);
+                  
+                  // 绘制文字 (居中对齐)
+                  const lineHeight = fontSize * 1.2;
+                  const totalHeight = lines.length * lineHeight;
+                  const startY = (height - totalHeight) / 2 + fontSize / 2;
+                  
+                  lines.forEach((line, index) => {
+                    ctx.fillText(line, width / 2, startY + index * lineHeight);
+                  });
+                  
+                  // 保存为临时文件
+                  const thumbnailPath = '/tmp/thumbnail.png';
+                  const buffer = canvas.toBuffer('image/png');
+                  fs.writeFileSync(thumbnailPath, buffer);
+                  
+                  console.log('Generated thumbnail:', thumbnailPath);
 
                   // --- C. 登录 Bluesky ---
                   const agent = new BskyAgent({ service: 'https://bsky.social' });
@@ -129,23 +173,20 @@ jobs:
                   
                   await agent.login({ identifier: USERNAME, password: PASSWORD });
 
-                  // --- D. 上传图片 Blob (如果图片存在) ---
+                  // --- D. 上传生成的缩略图 Blob ---
                   let thumbBlob = undefined;
                   
-                  if (fs.existsSync(imagePath)) {
-                    const fileBuf = fs.readFileSync(imagePath);
-                    const mimeType = mime.lookup(imagePath) || 'image/jpeg';
+                  if (fs.existsSync(thumbnailPath)) {
+                    const fileBuf = fs.readFileSync(thumbnailPath);
                     
-                    // 限制上传大小 (Bluesky 限制约 1MB，这里做个简单检查，一般 banner 不会太大)
+                    // 限制上传大小 (Bluesky 限制约 1MB)
                     if (fileBuf.length < 900000) {
-                        const { data: uploadData } = await agent.uploadBlob(fileBuf, { encoding: mimeType });
+                        const { data: uploadData } = await agent.uploadBlob(fileBuf, { encoding: 'image/png' });
                         thumbBlob = uploadData.blob;
-                        console.log('Image uploaded successfully.');
+                        console.log('Thumbnail uploaded successfully.');
                     } else {
-                        console.warn('Image too large for Bluesky blob (>900kb), skipping thumbnail.');
+                        console.warn('Generated thumbnail too large (>900kb), skipping.');
                     }
-                  } else {
-                    console.warn('Image file not found on disk:', imagePath);
                   }
 
                   // --- E. 发送带有 Embed Card 的帖子 ---
@@ -159,12 +200,12 @@ jobs:
                         uri: '$POST_URL',
                         title: title,
                         description: description,
-                        thumb: thumbBlob // 如果是 undefined，Bluesky 会显示无图卡片
+                        thumb: thumbBlob // 使用生成的缩略图
                       }
                     }
                   });
                   
-                  console.log('Posted to Bluesky with Link Card:', title);
+                  console.log('Posted to Bluesky with GitHub-style thumbnail:', title);
                   
                 } catch (error) {
                   console.error('Error posting to Bluesky:', error);

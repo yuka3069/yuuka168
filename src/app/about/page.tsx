@@ -13,19 +13,7 @@ export default function Page() {
       <AuthorLayout content={defaultAuthor}>
         <p>
           I often use discord to communicate with friends and colleagues. Feel
-          free to reach out to me there!
-        </p>
-        <p>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Excepturi
-          aperiam quo doloribus nisi quisquam deleniti ex ab consectetur quos?
-          Voluptatum praesentium ab labore doloribus incidunt commodi veniam
-          iusto beatae quaerat!
-        </p>
-        <p>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Excepturi
-          aperiam quo doloribus nisi quisquam deleniti ex ab consectetur quos?
-          Voluptatum praesentium ab labore doloribus incidunt commodi veniam
-          iusto beatae quaerat!
+          free to reach out to me there! marisa1151
         </p>
       </AuthorLayout>
     </>
