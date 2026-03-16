@@ -1,0 +1,349 @@
+---
+title: "MITOS-chapter2"
+abstract: xv6 operating system organization. Talk about why we need an operating system, three different modes risc-v provides, two types of kernel organization, overview of process and the processdure of starting xv6.
+publishedOn: "2026-03-16T18:20:33-0500"
+category: "os"
+---
+
+# Chapter 2 Operating system organization
+
+The operating system must:
+
+1. time-share the resources of the computer among those processes:
+
+for example: even if there are more processes than there are hardware CPUs, the operating system
+must ensure that all of the processes get a chance to execute.
+
+2. Isolation between process:
+
+for example: That is, if one process has a bug and malfunctions, it shouldn’t affect processes that don’t depend on the buggy process
+
+3. interaction:
+   Complete isolation, however,is too strong, since it should be possible for processes to intentionally interact; pipelines are an example.
+
+## 2.1 Abstracting physical resources
+
+The first question is: when encountering an operating system is why have it at all?
+
+Before anwsering this question, think this: library approach, which is often used in embadded devices.
+
+### The downsides:
+
+The downside of this library approach is that, if there is more than one application running, the applications must be well-behaved.
+
+For example, each application must periodically give up the
+CPU so that other applications can run. Such a cooperative time-sharing scheme may be OK if all applications trust each other and have no bugs.
+
+But it's more typical for applications to not trust each
+other, and to have bugs
+
+### Achieve strong isolation
+
+To achieve strong isolation it’s helpful to forbid applications from directly accessing sensitive hardware resources, and instead to abstract the resources into services(like read, open, write).
+
+For example, Unix applications interact with storage only through the file system’s open, read, write, and close system calls, instead of reading and writing the disk directly
+
+(把底层硬件资源封装成操作系统提供的服务，让程序通过接口使用，而不是直接操作硬件。)
+
+(应用程序通过 system calls 使用 文件系统服务。)
+
+Many forms of interaction among Unix processes occur via file descriptors
+
+## 2.2 User mode, supervisor mode, and system calls
+
+### CPUs provide _hardware support_ for strong isolation
+
+For example, RISC-V has three modes in which the CPU can execute instructions: _machine mode_, _supervisor mode_, and _user mode_.
+
+#### Machine mode
+
+Instructions executing in machine mode have full privilege;
+a CPU starts in machine mode.
+
+Machine mode is mostly intended for configuring a computer.
+
+Xv6 executes a few lines in machine mode and then changes to supervisor mode.
+
+#### Supervisor mode, User Space and Kernel space
+
+the CPU is allowed to execute privileged instructions:
+
+for example, enabling and disabling interrupts, reading and writing the register that holds the address of a page table, etc
+
+(about user space and kernel space)
+
+An application can execute only user-mode instructions (e.g., adding numbers, etc.) and is said to be running in _user space_,
+
+while the software in supervisor mode can also execute privileged instructions and is said to be running in _kernel space_
+
+#### ecall
+
+An application that wants to invoke a kernel function (e.g., the read system call in xv6) must transition to the kernel; an application cannot invoke a kernel function directly.
+
+RISC-V provides the ecall instruction for this purpose. Once, the CPU has switched to supervisor mode
+
+让 CPU 从 user sapce 切换到 kernel sapce，或者说，从user mode 切换到 kernel(supervisor) mode
+
+(in book 2.5)(sret)
+
+When the system call completes, the kernel switches back to the user stack and returns to user space by calling the `sret` instruction.
+
+which lowers the hardware privilege level and resumes executing user instructions just after the system call instruction
+
+## 2.3 Kernel organization
+
+A key design question is what part of the operating system should run in supervisor mode.
+
+### monolithic kernel
+
+One possibility is that the entire operating system resides in the kernel, so that the implementations of **all** system calls run in supervisor mode, This organization is called a _monolithic kernel_.
+
+entire operating system runs with full hardware privilege.Furthermore, it is easier for different parts of the operating system to cooperate
+
+A downside of the monolithic organization is that the interfaces between different parts of the operating system are often complex
+
+### microkernel
+
+(aboute server):
+OS services running as processes are called servers.
+
+the kernel provides an inter-process communication mechanism to send messages from one user-mode process to another
+
+For example, if an application like the shell wants to read or write a file, it sends a message to the file server and waits for a response.
+
+In a microkernel, the kernel interface consists of a few low-level functions for starting applications, sending messages, accessing device hardware.
+
+conceptually xv6 is monolithic.
+
+## 2.5 Process overview
+
+The mininum unit of isolation in xv6 is a process, as in other Unix operationg system.
+
+The process abstraction prevents one process from wrecking or spying on another process’s memory, CPU, file descriptors, wrecking the kernel itself.
+
+The mechanisms used by the kernel to implement processes include the user/supervisor mode flag, address spaces, and time-slicing of threads.
+
+### mechanisms to implement processes.
+
+To help enforce isolation, the process abstraction provides _the illusion to a program that it has its own private machine_.
+
+A process provides a program with what appears to be a private memory system, or _address space_, which other processes cannot read or write.
+
+A process also provides the program with _what appears to be its own CPU_ to execute the program’s instructions.
+
+### Illusion to own the hole memory for each process
+
+To give each process what appears to own a total private memory, xv6 uses page tables.
+
+The RISC-V page table translates **(or “maps”)** a virtual address (the address that an RISC-Vinstruction manipulates) to a physical address (an address that the CPU chip sends to main
+memory).
+
+### Page Table and Virtual Address
+
+Xv6 maintains a separate page table for each process that defines that process’s address space.
+
+![Layout-of-a-process-virtual-address](Layout-of-a-process-virtual-address.png)
+
+#### max virtual address
+
+There are a number of factors that limit the maximum size of a process’s address space:
+
+pointers on the RISC-V are 64 bits wide;
+
+the hardware only uses the low 39 bits when looking up virtual addresses in page tables;
+
+and xv6 only uses 38 of those 39 bits. Thus, the maximum address is 238 − 1 = 0x3fffffffff, which is MAXVA defined in `kernel/riscv.h:363`
+
+Trampoline and trapframe is in Chapter 4
+
+### xv6 kernel for states
+
+The xv6 kernel maintains many pieces of state for each process.
+
+Which is gathers into a `struct proc`.
+
+A process’s most important pieces of kernel state are its page table, its kernel stack, and its run state.
+
+We’ll use the notation p->xxx to refer to elements of the _proc structure_;
+
+for example, p->pagetable is a pointer to the process’s page table.
+
+p->state indicates whether the process is allocated, ready to run, running, waiting for I/O, or exiting.
+
+### Thread.
+
+Thread executes the process's instruction. A thread can be suspended and later resumed.
+
+Much of the state of a thread (local variables, function call return addresses) is stored on the thread’s stacks. (Each process has two stacks: a user stack and a kernel stack (according to 2.5's xv6 kernel for states, it's `p->kstack`)).
+
+#### Kernel stack details:
+
+- When the process is executing user instructions, only its user stack is in use, and its kernel stack is empty.
+
+- When the process enters the kernel (for a system call or interrupt), the kernel code executes on the process’skernel stack;
+
+- while a process is in the kernel, its user stack still contains saved data, but isn’t acively used.
+
+## 2.6 starting xv6, the first process and system call
+
+1. When the RISC-V computer powers on, it initializes itself and **runs a boot loader** which is stored in read-only memory
+
+The bootloader loads the xv6 kernel into memory.
+
+The loader loads the xv6 kernel into memory at physical address `0x80000000`
+
+(The reason it places the kernel at 0x80000000rather than0x0 is because the address range 0x0:0x80000000contains I/O devices.)
+
+2. In machine mode (as motioned earlier in chapter 2), the CPU executes xv6 starting at `_entry(kernel/entry.s:7)`.
+
+The RISC-V starts with paging hardware disabled: virtual memory directly mapped to physical memory.
+
+3. The instructions at `_entry` set up a stakc so that xv6 can run C code.
+
+Xv6 declares space for initial stack, `stack0`, in the file start.c, The code at `__entry` loads the stack pointer register(sp) with the address stack0+4096, the top of the stack, because the stack on RISC-V grows down.
+
+(so the max size of stack is 4096)
+
+Now that the kernel has a stack, `_entry` calls into C code at `start`
+
+4. Start (kernel/start.c), from machine mode to supervisor mode
+
+Start performs some configuration(maybe not discussed here) that is only allowed in machine mode, and then switched to supervisor mode.
+
+To enter supervisor mode, RISC-V provides the instruction
+`mret` .But, this instruction is most often used to return from a previous call from supervisor mode to machine mode. like this:
+
+```text
+supervisor mode
+      │
+      │ trap
+      ▼
+machine mode
+      │
+      │ mret
+      ▼
+supervisor mode
+```
+
+But, start isn't return from such a call, like this:
+
+```text
+machine mode  <--- where the start is
+      │
+      │ mret
+      ▼
+supervisor mode
+```
+
+So set this things up as if there had been one:
+
+1. it sets the previous privilege mode to supervisor in the register `mstatus`
+
+2. it sets the return address to main by writing main’s address into the register `mepc`
+
+3. disables virtual address translation in supervisor mode by writing 0 into the page-table register `satp`
+
+4. delegates all interrupts and exceptions to supervisor mode
+
+One more task `start` performs is : it programs the clock chip to generate timer interrupts.
+
+xv6 通过手动设置 mstatus 和 mepc，伪造一个 trap-return 环境，然后用 mret 从 machine mode 跳到 supervisor mode 并开始执行 main()。
+
+Before jumping into supervisor mode, start performs one more task: it programs the clock chip to generate timer interrupts
+
+Finally, after all this done, `start` "returns" to supervisor mode by calling `mret`. This causes the program counter to change to main.
+
+5. main function
+
+Firstly, main(kernal/main.c) initializes serveral devices and subsystem. It creates the first process by calling `userinit`(kernel/proc.c:226).
+
+The first process executes a small program written in RISC-V assembly, make makes the first system call in xv6.
+
+`initcode.S`(user/initcode.s:3)(it's the assembly run in the first process) loads the number for the exec system call into a7 and then calls ecall.
+
+like this:
+
+```asm
+li a7, SYS_exec
+ecall
+```
+
+6. Kernal deal with syscall
+
+The kernel uses the number in register a7 in syscall to call the desired system call.
+
+The system call table maps SYS_EXEC to sys_exec(kernal/syscall.c)
+
+Then `exec` replaces the memory and registers of current process with a new program (in this case /init)
+
+7.Once the kernel has completed exec, it returns to user space in the /init process.
+
+Init (user/init.c:15) creates a new console device file if needed and then opens it as file descriptors 0, 1, and 2.
+
+Then it starts a shell on the console. The system is up.
+
+```text
+┌───────────────────────────┐
+│        Hardware           │
+│      (RISC-V CPU)        │
+└─────────────┬─────────────┘
+              │ Power on
+              ▼
+┌───────────────────────────┐
+│        Boot ROM           │
+│       Bootloader          │
+│  把 xv6 kernel 加载到内存   │
+└─────────────┬─────────────┘
+              ▼
+┌───────────────────────────┐
+│       xv6 Kernel          │
+│                           │
+│ entry.s → start() → main()│
+│                           │
+│ 初始化：                  │
+│ • memory                  │
+│ • process table           │
+│ • traps                   │
+│ • file system             │
+│ • devices                 │
+└─────────────┬─────────────┘
+              ▼
+┌───────────────────────────┐
+│        userinit()         │
+│ 创建第一个进程              │
+│                           │
+│ 运行 user/initcode.S      │
+└─────────────┬─────────────┘
+              ▼
+┌───────────────────────────┐
+│        initcode.S         │
+│                           │
+│ li a7, SYS_exec           │
+│ ecall                     │
+│                           │
+│ 调用 exec("/init")        │
+└─────────────┬─────────────┘
+              ▼
+┌───────────────────────────┐
+│          /init            │
+│       user/init.c         │
+│                           │
+│ 打开 console              │
+│ fd 0 stdin                │
+│ fd 1 stdout               │
+│ fd 2 stderr               │
+│                           │
+│ fork + exec("sh")         │
+└─────────────┬─────────────┘
+              ▼
+┌───────────────────────────┐
+│           shell           │
+│            sh             │
+│                           │
+│ 读取用户命令                │
+│ fork()                    │
+│ exec()                    │
+│                           │
+│ xv6 开始运行                │
+└───────────────────────────┘
+```
