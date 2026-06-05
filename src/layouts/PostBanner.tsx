@@ -37,7 +37,7 @@ export default function PostMinimal({
       : "https://picsum.photos/seed/picsum/800/400";
 
   return (
-    <SectionContainer>
+    <SectionContainer withWrapperBg={false}>
       <ScrollTopAndComment />
       <article>
         <div>

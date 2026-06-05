@@ -57,7 +57,7 @@ export default function PostLayout({
   const { slug, date, title, categories } = content;
 
   return (
-    <SectionContainer>
+    <SectionContainer withWrapperBg={false}>
       <ScrollTopAndComment />
       <article>
         <div className="xl:divide-y xl:divide-gray-200 xl:dark:divide-gray-700">
