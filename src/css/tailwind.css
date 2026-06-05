@@ -188,3 +188,80 @@ input:-webkit-autofill:focus {
   display: inline-block;
   vertical-align: middle;
 }
+
+body {
+  background-color: #f7f5ff;
+  background-image: url("/pattern.svg");
+  background-repeat: repeat;
+  background-size: 16px 16px;
+}
+
+.dark body {
+  background-color: #151424;
+  background-image:
+    linear-gradient(rgb(10 10 10 / 62%), rgb(10 10 10 / 62%)),
+    url("/pattern.svg");
+}
+
+body::-webkit-scrollbar {
+  width: 12px;
+}
+
+body::-webkit-scrollbar-track {
+  background: #999999;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: #151424;
+  border-radius: 6px;
+  border: 3px solid transparent;
+}
+
+/* Firefox */
+body {
+  scrollbar-width: thin;
+  scrollbar-color: #151424 transparent;
+}
+
+.site-wrapper {
+  overflow: visible;
+}
+
+.site-wrapper::before,
+.site-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 18px;
+  background-image: url("/wrapperbg.gif");
+  background-repeat: repeat-y;
+  background-size: 960px 18px;
+  pointer-events: none;
+}
+
+.site-wrapper::before {
+  left: -18px;
+  background-position: left top;
+}
+
+.site-wrapper::after {
+  right: -18px;
+  background-position: right top;
+}
+
+.site-wrapper > * {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 640px) {
+  .site-wrapper::before {
+    left: 0;
+  }
+
+  .site-wrapper::after {
+    right: 0;
+  }
+}
