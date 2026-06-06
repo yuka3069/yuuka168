@@ -16,6 +16,9 @@ const MAX_DISPLAY = 5;
 interface MainProps {
   posts: Posts;
 }
+function randownImage(max: number, dir: "left" | "right"): string {
+  return `/images/banner-${dir}-${Math.floor(Math.random() * max) + 1}.jpg`;
+}
 
 export default function Home({ posts }: MainProps) {
   return (
@@ -23,7 +26,7 @@ export default function Home({ posts }: MainProps) {
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
         <div className="flex overflow-hidden pt-4 pb-6">
           <Image
-            src="/images/banner-left.jpg"
+            src={randownImage(3, "left")}
             alt=""
             width={300}
             height={120}
@@ -31,7 +34,7 @@ export default function Home({ posts }: MainProps) {
             priority
           />
           <Image
-            src="/images/banner-right-2.jpg"
+            src={randownImage(3, "right")}
             alt=""
             width={600}
             height={120}
